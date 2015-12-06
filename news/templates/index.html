@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}News{% endblock title %}
+
+{% block extrahead %}
+<style>
+  .container {
+    width: 80%;
+  }
+</style>
+<script>
+var dateformat = function(date) {
+  var ye = date.getFullYear().toString();
+  var mo = (date.getMonth() + 1).toString();
+  var dt = date.getDate().toString();
+
+  if (mo.length == 1) mo = "0"+mo;
+  if (dt.length == 1) dt = "0"+dt;
+  return ye+"-"+mo+"-"+dt;
+}
+
+$(function(){
+  $("#datepicker").datepicker({
+    inline: true
+  })
+  .on("changeDate", function(data){
+    var date = data.date;
+    var protocol = $(location).attr("protocol");
+    var host = $(location).attr("host");
+    var pathname = $(location).attr("pathname");
+    var param = $.param({"date":dateformat(date)});
+    $(location).attr("href", pathname+"?"+param);
+  });
+
+  $("#datepicker").datepicker("update", new Date({{ date.year }},{{ date.month }}-1,{{ date.day }}));
+
+  $(".btn-category").on("click", function(){
+    var date = $("#datepicker").datepicker("getDate");
+    var param = $.param({"date":dateformat(date)});
+    var category = $(this).text();
+    var href = "/news/";
+    if (category != "All") {
+       href += "category/"+category
+    }
+    $(location).attr("href", href+"?"+param);
+  });
+
+});
+</script>
+{% endblock extrahead %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-2">
+      <div class="form-group">
+        <div id="datepicker"></div>
+      </div>
+      <div class="btn-group-vertical  btn-group-lg" role="group" aria-label="...">
+        {% for it in categories %}
+          {% if category == it %}
+        <button type="button" class="btn btn-success btn-category">{{ it }}</button>
+          {% else %}
+        <button type="button" class="btn btn-default btn-category">{{ it }}</button>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-md-10">
+      <table class="col-md-8 table" id="news-table">
+        <thead>
+          <tr><th>date</th><th>category</th><th>title</th></tr>
+        </thead>
+        <tbody>
+        {% for it in news %}
+          <tr>
+            <td>{{ it.date }}</td>
+            <td>{{ it.category }}</td>
+            <td><a href="{{ it.url }}">{{ it.title }}</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endblock content %}
+
